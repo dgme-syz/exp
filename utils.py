@@ -116,8 +116,10 @@ class Figer_aFet():
         elif kind == 2:
             random.shuffle(self.ord)
         else:
+            self.ord = [get_suf(x) for x in self.ord]
             self.ord.sort() # 字典序排序
-        self.ord = [get_suf(x) for x in self.ord]
+        if kind != 3:
+            self.ord = [get_suf(x) for x in self.ord]
         for i in range(len(self.ord)):
             self.tot[self.ord[i]] = i + 1
         
