@@ -129,6 +129,7 @@ if __name__ == '__main__':
     paser.add_argument('--limit', type=int, default=200)
     paser.add_argument('--kind', type=int, default=0)
     paser.add_argument('--reverse', type=bool, default=False)
+    paser.add_argument('--model', type=str, default="llama3:8b")
     
     args = paser.parse_args()
 
@@ -149,7 +150,7 @@ if __name__ == '__main__':
                 {"role": "system", "content": "You are a excellent linguist, you can finish the following task well! Also, you need to recognize some entity types are relative."},
                 {"role": "user", "content": li[i]},
             ]
-            response = ollama.chat(model='llama3:8b', messages=mes)
+            response = ollama.chat(model=args.model, messages=mes)
             pred_info = pred_info + ' ' + response['message']['content']
         
         try:
