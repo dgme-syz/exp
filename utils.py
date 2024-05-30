@@ -120,7 +120,6 @@ class Figer_aFet():
             self.ord.sort() # 字典序排序
         if kind != 3:
             self.ord = [get_suf(x) for x in self.ord]
-        print(self.ord)
         for i in range(len(self.ord)):
             self.tot[self.ord[i]] = i + 1
         
