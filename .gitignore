@@ -23,3 +23,4 @@ TestResults.xml
 *.log
 *.pyc
 *.json
+fine-tuning/LLaMA-Factory/

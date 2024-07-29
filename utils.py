@@ -1,7 +1,14 @@
-import json, os, random, ollama, re, datetime, argparse
 from loguru import logger
 from metric import Scores
 from collections import OrderedDict
+import json
+import os
+import random
+import re
+import datetime
+import argparse
+import transformers
+import torch
 
 def init_figer_afet(path='./figer_afet'):
     # labels: 存储无重复所有标签
@@ -63,7 +70,7 @@ def make_prompt(sentence, mentions, ord):
 [sentence]: "Apple Inc. unveiled a new smartphone called iPhone 13."
 [entity]: apple
 [entity types]: ['musician', 'artist', 'person', 'organization', 'company']
-[Fine-Grained Entity Classification Result]:  'organization', 'company' 
+[Fine-Grained Entity Classification Result]: organization company
 
 Now I will give you a problem as the above example, you just need to output the Fine-Grained Entity Classification Result
 
@@ -83,8 +90,8 @@ Now I will give you a problem as the above example, you just need to output the 
 [Fine-Grained Entity Classification Result]:
 """
 
-    prompt += f"""[Warning]: Just output nothing except entity types above, separate them by spaces, there may be more than one answer"""
-    rprompt += f"""[Warning]: Just output nothing except entity types above, separate them by spaces, there may be more than one answer"""
+    prompt += f"""[Warning]: Just output nothing except entity types above, separate them by one space, there may be more than one answer"""
+    rprompt += f"""[Warning]: Just output nothing except entity types above, separate them by one space, there may be more than one answer"""
     return prompt, rprompt
 
 def get_suf(x):
@@ -139,6 +146,7 @@ class Figer_aFet():
                     yield prompts, [get_suf(x) for x in true_labels]
 
 limit = 200 
+head_str = "You are a excellent linguist, you can finish the following task well! Also, you need to recognize some entity types are relative."
 
 if __name__ == '__main__':
     paser = argparse.ArgumentParser()
@@ -146,7 +154,6 @@ if __name__ == '__main__':
     paser.add_argument('--kind', type=int, default=1)
     paser.add_argument('--reverse', type=bool, default=False)
     paser.add_argument('--N', type=int, default=1)
-    paser.add_argument('--model', type=str, default="llama3:8b")
     args = paser.parse_args()
     data = Figer_aFet('./figer_afet', kind=args.kind)
     sample = 0
@@ -157,23 +164,18 @@ if __name__ == '__main__':
         datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + '.log')
 
     
+    pipeline = transformers.pipeline(
+        "text-generation", model="D:\\projects\\nlp\\huggingface_model\\llama3_8b", \
+            model_kwargs={"torch_dtype": torch.bfloat16}, device_map="auto"
+    )
     for li, true_labels in data.get_data:
         pred_info = ''
         for i in range(len(li)):     
             if args.reverse is False and i > 0:
                 continue
-            mes = [
-                {"role": "system", "content": "You are a excellent linguist, you can finish the following task well! Also, you need to recognize some entity types are relative."},
-                {"role": "user", "content": li[i]},
-            ]
-            response = ollama.chat(model=args.model, messages=mes)
+            response = pipeline(head_str + "\n" + li[i])
+            print(response)
             pred_info = pred_info + ' ' + response['message']['content']
-        # print(rcontx)
-        # print(response)
-        # print(f"output : {pred_info}")
-        # print(true_labels)
-        # print(data.tot)
-        # print(true_labels)
         try:
             li = pred_info.split(' ')
             pred_labels = {}
@@ -205,6 +207,7 @@ if __name__ == '__main__':
             sample += 1
             if (sample == limit):
                 break
+        break
 
     
     
