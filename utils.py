@@ -102,8 +102,9 @@ def get_suf(x):
 N = 1
 
 class Figer_aFet():
-    def __init__(self, path, kind=0) -> None:
+    def __init__(self, path, kind=0, train=True) -> None:
         self.path = path
+        self.train = train
         if os.path.exists(os.path.join(path, 'labels.json')):
             with open(os.path.join(path, 'labels.json'), 'r') as f:
                 self.labels = json.load(f)
@@ -134,7 +135,8 @@ class Figer_aFet():
         
     @property
     def get_data(self):
-        with open(os.path.join(self.path, 'train.json'), 'r') as f:
+        target_dataset = 'train.json' if self.train else 'test.json'
+        with open(os.path.join(self.path, target_dataset), 'r') as f:
             for line in f:
                 data = json.loads(line)
                 sentence = data['tokens']
@@ -157,10 +159,11 @@ if __name__ == '__main__':
     paser.add_argument('--N', type=int, default=1)
     paser.add_argument('--model', type=str, default="llama3:8b")
     paser.add_argument('--api', type=str, default="http://localhost:8000/v1")
+    paser.add_argument('--train', type=bool, default=True)
     # 判断使用 api 还是 模型
     paser.add_argument('--use_api', type=bool, default=False)
     args = paser.parse_args()
-    data = Figer_aFet('./figer_afet', kind=args.kind)
+    data = Figer_aFet('./figer_afet', kind=args.kind, train=args.train)
     sample = 0
     N = args.N
     limit = args.limit
@@ -184,10 +187,10 @@ if __name__ == '__main__':
                 {"role": "system", "content": "You are a excellent linguist, you can finish the following task well! Also, you need to recognize some entity types are relative."},
                 {"role": "user", "content": li[i]},
             ]
-            if args.use_api:
-                response = ollama.chat(model=args.model, messages=mes, api=args.api)['messages']['content']
+            if args.use_api == False:
+                response = ollama.chat(model=args.model, messages=mes)['messages']['content']
             else:
-                response = client.chat.completions.create(messages=mes, model="test")
+                response = client.chat.completions.create(messages=mes, model="test").choices[0].message.content
             pred_info = pred_info + ' ' + response
         # print(rcontx)
         # print(response)

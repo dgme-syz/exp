@@ -10,8 +10,12 @@ def main(args):
     with open(output_file, "w") as f:
         f.write("[\n")
         first_item = True
-        i = 0
+        i, x = 0, 0
         for li, true_labels in tqdm(data.get_data, total=train_sample_num):
+            if x >= args.limit * 0.58 and len(true_labels) <= 3:
+                continue
+            if len(true_labels) <= 3:
+                x += 1
             item = {
                 "instruction": "You are an excellent linguist, you can finish the following task well! Also, you need to recognize some entity types are relative.",
                 "input": li[0],
@@ -25,11 +29,13 @@ def main(args):
             if i >= args.limit:
                 break
         f.write("\n]")
+    print(f"Write {i} items to {output_file}")
         
 if __name__ == "__main__":
+    # python -m fine-tuning.get_data --kind 0 --limit 1000
     paser = argparse.ArgumentParser()
     paser.add_argument('--kind', type=int, default=0)
-    paser.add_argument('--limit', type=int, default=100)
+    paser.add_argument('--limit', type=int, default=5000)
     args = paser.parse_args()
     main(args)
 
