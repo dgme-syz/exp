@@ -101,7 +101,7 @@ def get_suf(x):
 
 N = 1
 
-class Figer_aFet():
+class FET():
     def __init__(self, path, kind=0, train=True) -> None:
         self.path = path
         self.train = train
@@ -153,6 +153,7 @@ limit = 200
 
 if __name__ == '__main__':
     paser = argparse.ArgumentParser()
+    paser.add_argument('--path', type=str, default='./figer_afet')
     paser.add_argument('--limit', type=int, default=200)
     paser.add_argument('--kind', type=int, default=1)
     paser.add_argument('--reverse', type=bool, default=False)
@@ -163,7 +164,7 @@ if __name__ == '__main__':
     # 判断使用 api 还是 模型
     paser.add_argument('--use_api', type=bool, default=False)
     args = paser.parse_args()
-    data = Figer_aFet('./figer_afet', kind=args.kind, train=args.train)
+    data = FET(args.path, kind=args.kind, train=args.train)
     sample = 0
     N = args.N
     limit = args.limit
@@ -188,7 +189,8 @@ if __name__ == '__main__':
                 {"role": "user", "content": li[i]},
             ]
             if args.use_api == False:
-                response = ollama.chat(model=args.model, messages=mes)['messages']['content']
+                resp = ollama.chat(model=args.model, messages=mes)
+                response = resp['message']['content']
             else:
                 response = client.chat.completions.create(messages=mes, model="test").choices[0].message.content
             pred_info = pred_info + ' ' + response

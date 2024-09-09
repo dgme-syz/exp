@@ -10,17 +10,14 @@ def fetch_one_item(s: str) -> dict:
     start_index, end_index = int(string_list[0]), int(string_list[1])
     
     sentence = string_list[2].split()
-    labels = []
-    for i in range(3, len(string_list)):
-        if string_list[i][0] == '/':
-            labels.append(string_list[i])
+    labels = string_list[3].split()
     return dict({
         "tokens": sentence,
         "mentions": [{
             "start": start_index,
-            "labels": label,
+            "labels": labels,
             "end": end_index,
-        } for label in labels],
+        }],
     })
     
 def main() -> None:
@@ -37,7 +34,10 @@ def main() -> None:
                 os.makedirs(os.path.dirname(pos), exist_ok=True)
             with open(path, 'r') as f:
                 for line in tqdm(f):
-                    json.dump(fetch_one_item(line), open(pos, 'a'))
+                    with open(pos, 'a') as g:
+                        json.dump(fetch_one_item(line), g)
+                        g.write('\n')
+                    
 
 
 if __name__ == '__main__':
