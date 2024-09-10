@@ -1,11 +1,12 @@
 import json, argparse
 from tqdm import tqdm
-from utils import Figer_aFet
+from utils import FET
 from config import *
 
 def main(args):
-    data = Figer_aFet('./figer_afet', kind=args.kind)
-    output_file = f"./fine-tuning/tune_data/train_{args.kind}.json"
+    data = FET(args.path, kind=args.kind)
+    name = args.path.split("/")[-1]
+    output_file = f"./fine-tuning/tune_data/train_{args.kind}_{name}.json"
 
     with open(output_file, "w") as f:
         f.write("[\n")
@@ -34,6 +35,7 @@ def main(args):
 if __name__ == "__main__":
     # python -m fine-tuning.get_data --kind 0 --limit 1000
     paser = argparse.ArgumentParser()
+    paser.add_argument('--path', type=str, default='./figer_afet')
     paser.add_argument('--kind', type=int, default=0)
     paser.add_argument('--limit', type=int, default=5000)
     args = paser.parse_args()
